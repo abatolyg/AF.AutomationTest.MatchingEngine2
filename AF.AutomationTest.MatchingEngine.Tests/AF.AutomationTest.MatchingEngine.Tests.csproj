@@ -1,10 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
 
 	  <IsPackable>false</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Test Data\**" />
+    <EmbeddedResource Remove="Test Data\**" />
+    <None Remove="Test Data\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
@@ -15,10 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AF.AutomationTest.MatchingEngine\AF.AutomationTest.MatchingEngine.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Test Data\" />
   </ItemGroup>
 
 </Project>

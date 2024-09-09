@@ -76,7 +76,8 @@ namespace AF.AutomationTest.MatchingEngine.Tests
         }
         public static IEnumerable<object[]> GetTestCases()
         {
-            var filePath = "C:\\logs\\testdataMy.csv"; // Path to your test data file
+            var basePath = AppDomain.CurrentDomain.BaseDirectory;
+            var filePath = Path.Combine(basePath,"..", "..", "..", "TestData", "testdataMy.csv");
             var lines = File.ReadAllLines(filePath);
             var testCases = new List<object[]>();
 
