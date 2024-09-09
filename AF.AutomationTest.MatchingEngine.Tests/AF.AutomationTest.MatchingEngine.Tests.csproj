@@ -17,4 +17,8 @@
     <ProjectReference Include="..\AF.AutomationTest.MatchingEngine\AF.AutomationTest.MatchingEngine.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Test Data\" />
+  </ItemGroup>
+
 </Project>

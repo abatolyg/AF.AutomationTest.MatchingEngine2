@@ -23,10 +23,10 @@ namespace AF.AutomationTest.MatchingEngine
         /// <param name="settlementDate"></param>
         /// <param name="side"></param>
         /// <returns></returns>
-        public Record CreateRecord(string symbol, int quantity, double price, DateTime settlementDate, Side side)
+        public Record CreateRecord(Symbol symbol, int quantity, double price, DateTime settlementDate, Side side)
         {
             var id = Guid.NewGuid().ToString();
-            var record = new Record(id, symbol.ToString(), quantity, new decimal(Math.Round(price, 2)), settlementDate, side.ToString());
+            var record = new Record(id, symbol, quantity, price, settlementDate, side.ToString());
             try
             {
                 _matchingHandler.Trades.Add(id, record);
@@ -67,7 +67,7 @@ namespace AF.AutomationTest.MatchingEngine
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
-        public IList<(Record trade, Record counterTrade)> FindMatch(string symbol)
+        public IList<(Record trade, Record counterTrade)> FindMatch(Symbol symbol)
         {
             return _matchingHandler.Matches.Values.Where(t => t.trade.Symbol == symbol).ToList();
         }
@@ -80,10 +80,28 @@ namespace AF.AutomationTest.MatchingEngine
         /// <returns></returns>
         public bool CheckIfRecordsMatched(Record record, Record counterRecord)
         {
-            var numOfMatch = _matchingHandler.Matches.Values.Where(t => (t.trade.Id == record.Id && t.counterTrade.Id == counterRecord.Id) 
-                                                                   || t.trade.Id == counterRecord.Id && t.counterTrade.Id == record.Id);
-            
-            return (numOfMatch.Count() != 0);
+            Trace.WriteLine("CheckIfRecordsMatched");
+
+            var numOfMatch = _matchingHandler.Matches.Values.Where(
+                t => (t.trade.Id == record.Id && t.counterTrade.Id == counterRecord.Id) || 
+                      t.trade.Id == counterRecord.Id && t.counterTrade.Id == record.Id);
+
+            if (numOfMatch.Count() != 0)
+            {
+                Trace.WriteLine("CheckIfRecordsMatched found that records are identical");
+
+                var list = FindMatch(record.Symbol);
+
+                if (list.Count == 1) 
+                {
+                    Trace.WriteLine("each record matched to only one other record. erturn true");
+                    return true;
+                }
+                else
+                    Trace.WriteLine($"each record can be matched to only one other record, but acrual number of matches: {list.Count}");
+            }
+
+            return false;
         }
 
         /// <summary>

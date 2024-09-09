@@ -35,10 +35,12 @@ namespace AF.AutomationTest.MatchingEngine
 
         private bool IsMatch(Record trade, Record counterTrade)
         {
-            const int quantityTolerance = 5;
+            const int quantityTolerance = 10;
 
-            if (trade.Symbol == counterTrade.Symbol.ToLower() && (trade.Quantity - counterTrade.Quantity) < quantityTolerance &&
-                DateTime.Compare(trade.SettlementDate.Date, counterTrade.SettlementDate.Date) == 0 && trade.Price == counterTrade.Price &&
+            if (trade.Symbol == counterTrade.Symbol &&
+                Math.Abs((trade.Quantity - counterTrade.Quantity)) <= quantityTolerance &&
+                DateTime.Compare(trade.SettlementDate,counterTrade.SettlementDate) == 0 && 
+                trade.Price == counterTrade.Price &&
                 trade.Side != counterTrade.Side)
             {
                 Matches.Add((trade.Id, counterTrade.Id), (trade, counterTrade));
