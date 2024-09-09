@@ -1,0 +1,30 @@
+Symbol1,Quantity1,Price1,Date1,Side1,Symbol2,Quantity2,Price2,Date2,Side2,ExpectedMatch,DisplayName
+GOOG,1000,1250,03/05/2023,Buy,GOOG,1000,1250,03/05/2023,Sell,TRUE,TC_1000_Exact Match
+GOOG,1000,1250,03/05/2023,Buy,AAPL,1000,1250,03/05/2023,Sell,FALSE,TC_1001_Symbol Mismatch. Simple
+GOOG,1000,1250,03/05/2023,Buy,VOD,1000,1250,03/05/2023,Sell,FALSE,TC_1002_Symbol Mismatch. More symbols
+GOOG,1000,1250,03/05/2023,Buy,goog,1000,1250,03/05/2023,Sell,FALSE,TC_1003_Symbol Mismatch Case Sensitive all
+Goog,1000,1250,03/05/2023,Buy,goog,1000,1250,03/05/2023,Sell,FALSE,TC_1004_Symbol Mismatch Case Sensitive one
+GOOG,1000,1250,03/05/2023,Buy,GOOG,1010,1250,03/05/2023,Sell,TRUE,TC_1005_Quantity Mismatch Within Tolerance
+GOOG,1010,1250,03/05/2023,Buy,GOOG,1011,1250,03/05/2023,Sell,TRUE,TC_1005_Quantity Mismatch Within Tolerance In another Order of records passed!
+GOOG,1000,1250,03/05/2023,Buy,GOOG,1011,1250,03/05/2023,Sell,FALSE,TC_1006_Quantity Mismatch Beyond Tolerance
+GOOG,1011,1250,03/05/2023,Buy,GOOG,1000,1250,03/05/2023,Sell,FALSE,TC_1007_Quantity Mismatch Tolerance. In another Order of records passed!
+GOOG,1000,1250,03/05/2023,Buy,GOOG,1000,1251,03/05/2023,Sell,FALSE,TC_1008_Price Mismatch by Cents
+GOOG,1000,1250.1,03/05/2023,Buy,GOOG,1000,1250,03/05/2023,Sell,FALSE,TC_1009_Price Mismatch by Cents 1
+GOOG,1000,1250.1,03/05/2023,Buy,GOOG,1000,1250.11,03/05/2023,Sell,FALSE,TC_1010_Price Mismatch by Cents 2
+GOOG,1000,1250.111,03/05/2023,Buy,GOOG,1000,1250.11,03/05/2023,Sell,FALSE,TC_1011_Price Mismatch by Cents 3
+GOOG,1000,1250,2024-05-03T10:00:00,Buy,GOOG,1000,1250,2023-05-03T10:00:00,Sell,FALSE,TC_1012_Date Mismatch in Year
+GOOG,1000,1250,2023-05-03T10:00:00,Buy,GOOG,1000,1250,2023-06-03T10:00:00,Sell,FALSE,TC_1013_Date Mismatch in Month
+GOOG,1000,1250,2023-05-03T10:00:00,Buy,GOOG,1000,1250,2023-05-03T11:06:00,Sell,FALSE,TC_1014_Date Mismatch by Minutes
+GOOG,1000,1250,2023-05-03T11:00:00,Buy,GOOG,1000,1250,2023-05-03T11:00:10,Sell,FALSE,TC_1015_Date Mismatch by Seconds
+GOOG,1000,1250,2023-05-03T10:00:00.000,Buy,GOOG,1000,1250,2023-05-03T10:00:00.001,Sell,FALSE,TC_1016_Date Mismatch by Milliseconds
+GOOG,1000,1250,2023-05-03T10:00:00+02:00,Buy,GOOG,1000,1250,2023-05-03T10:00:00-05:00,Sell,FALSE,TC_1017_Date Mismatch by Time Zones
+GOOG,1000,1250,03/05/2023,Buy,GOOG,1000,1250,03/05/2023,Sell,True,TC_1018_Side Match First Sell second Buy
+GOOG,1000,1250,03/05/2023,Buy,GOOG,1000,1250,04/05/2023,Sell,FALSE,TC_1019_Side Match First Buy second Sell
+GOOG,1000,1250,03/05/2023,Buy,GOOG,1000,1250,04/05/2023,Buy,FALSE,TC_1020_Side Mismatch both Buy
+GOOG,1000,1250,03/05/2023,Sell,AAPL,1005,1251,04/05/2023,Sell,FALSE,TC_1021_Side Mismatch both Sell
+GOOG,1000,1250,03/05/2023,Buy,GOOG,1000,1250,03/05/2023,Sell,TRUE,TC_2001_Three_records_Exact Match_And_record1 match record2 and not record3
+GOOG,1000,1250,03/05/2023,Buy,GOOG,1000,1250,03/05/2023,Sell,TRUE,TC_2001_Three_records_Exact Match_And_record1 match record3 and not record2
+GOOG,1000,1250,03/05/2023,Buy,GOOG,1000,1250,03/05/2023,Sell,TRUE,TC_2001_Three_records_Exact Match_And_record1 not match record3. record 3 match record2
+GOOG,1000,1250,03/05/2023,Buy,GOOG,1000,1250,03/05/2023,Sell,FALSE,TC_2000_Three_records_Exact Match_But_record1 match record2 and record3
+GOOG,1000,1250,03/05/2023,Buy,GOOG,1000,1250,03/05/2023,Sell,FALSE,TC_2000_Four_records_Exact Match_But_record1 match record3 and record4
+GOOG,1000,1250,03/05/2023,Buy,GOOG,1000,1250,03/05/2023,Sell,FALSE,TC_2000_Four_records_Exact Match_But_record2 match record3 and record4
