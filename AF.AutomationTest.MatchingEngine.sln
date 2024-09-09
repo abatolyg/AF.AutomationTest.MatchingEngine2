@@ -5,7 +5,12 @@ VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AF.AutomationTest.MatchingEngine", "AF.AutomationTest.MatchingEngine\AF.AutomationTest.MatchingEngine.csproj", "{2E2C09EE-EA68-452D-9F3E-0195D8B4982A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AF.AutomationTest.MatchingEngine.Tests", "AF.AutomationTest.MatchingEngine.Tests\AF.AutomationTest.MatchingEngine.Tests.csproj", "{AB03B798-5E58-4253-A921-0F138FD8BA6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AF.AutomationTest.MatchingEngine.Tests", "AF.AutomationTest.MatchingEngine.Tests\AF.AutomationTest.MatchingEngine.Tests.csproj", "{AB03B798-5E58-4253-A921-0F138FD8BA6A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{534C16F1-2C2E-4153-A8D3-8C3163589936}"
+	ProjectSection(SolutionItems) = preProject
+		Picture to see after Build and Execute tests.png = Picture to see after Build and Execute tests.png
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
