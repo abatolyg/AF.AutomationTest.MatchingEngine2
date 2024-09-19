@@ -1,0 +1,95 @@
+[
+  {
+    "_id": {
+      "$oid": "66ead234b9001da78015952b"
+    },
+    "Records": [
+      {
+        "Symbol": "GOOG",
+        "Price": 100,
+        "Quantity": 10,
+        "SettlementDate": "03/05/2023",
+        "Side": "Buy"
+      },
+      {
+        "Symbol": "GOOG",
+        "Price": 100,
+        "Quantity": 10,
+        "SettlementDate": "03/05/2023",
+        "Side": "Sell"
+      },
+      {
+        "Symbol": "GOOG",
+        "Price": 100,
+        "Quantity": 10,
+        "SettlementDate": "03/05/2023",
+        "Side": "Sell"
+      }
+    ],
+    "compareRecords": "2,3",
+    "expectedMatch": false,
+    "DisplayName": "2 matches the same sell"
+  },
+  {
+    "_id": {
+      "$oid": "66ead234b9001da78015952c"
+    },
+    "Records": [
+      {
+        "Symbol": "GOOG",
+        "Price": 300,
+        "Quantity": 10,
+        "SettlementDate": "03/05/2023",
+        "Side": "Sell"
+      },
+      {
+        "Symbol": "GOOG",
+        "Price": 300,
+        "Quantity": 10,
+        "SettlementDate": "03/05/2023",
+        "Side": "Sell"
+      },
+      {
+        "Symbol": "GOOG",
+        "Price": 300,
+        "Quantity": 10,
+        "SettlementDate": "03/05/2023",
+        "Side": "Buy"
+      }
+    ],
+    "compareRecords": "2,3",
+    "expectedMatch": false,
+    "DisplayName": "2 matches the same buy"
+  },
+  {
+    "_id": {
+      "$oid": "66ead234b9001da78015952d"
+    },
+    "Records": [
+      {
+        "Symbol": "GOOG",
+        "Price": 100,
+        "Quantity": 10,
+        "SettlementDate": "03/05/2023",
+        "Side": "Sell"
+      },
+      {
+        "Symbol": "GOOG",
+        "Price": 130,
+        "Quantity": 10,
+        "SettlementDate": "03/05/2023",
+        "Side": "Sell"
+      },
+      {
+        "Symbol": "GOOG",
+        "Price": 130,
+        "Quantity": 10,
+        "SettlementDate": "03/05/2023",
+        "Side": "Buy"
+      }
+    ],
+    "compareRecords": "2,3",
+    "expectedMatch": true,
+    "DisplayName": "2 matches only 2024"
+  }
+]

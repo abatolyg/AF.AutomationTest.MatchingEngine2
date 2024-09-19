@@ -7,13 +7,30 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.IO;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Newtonsoft.Json;
+using SharpCompress.Common;
 
 namespace AF.AutomationTest.MatchingEngine.Tests
 {
-    [TestClass]
+    public class TradeRecord
+    {
+        public Id _id { get; set; }
+        public List<Record> Records { get; set; } = new List<Record>();
+        public string compareRecords { get; set; }
+        public bool expectedMatch { get; set; }
+        public string DisplayName { get; set; }
+    }
+
+    public class Id
+    {
+        public string _id { get; set; }
+    }
+    
+[TestClass]
     public class Tests
     {
         private static MatchingApi _matchingApi;
+        private MongoDBService _mongoDBService;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)
@@ -25,6 +42,14 @@ namespace AF.AutomationTest.MatchingEngine.Tests
         public void TestInitialize()
         {
             _matchingApi.ClearData();
+
+            // Initialize MongoDBService with your connection details
+            _mongoDBService = new MongoDBService(
+                "mongodb+srv://anatolyg:p6wQun9b5IfXn6c2@cluster0-anatolyg.7v9it.mongodb.net/Cluster0-anatolyg?retryWrites=true&w=majority",
+                "aft_qa_automation",
+                "trades_to_Verify");
+
+
         }
 
         // Readme
@@ -46,8 +71,113 @@ namespace AF.AutomationTest.MatchingEngine.Tests
         // Price type decimal repklaced to double 
         // BUG 8: Test Case Faile. TC_1012_ Date Mismatch by Minutes,Seconds,Milliseconds, Time Zones failed
         // Helper method for creating records
+        [DataTestMethod]
+        [DynamicData(nameof(GetTestCasesFromJsonAny3), DynamicDataSourceType.Method)]
+        public void FindMatchTestFromJsonRecordsAny(string compareRecords, bool expectedMatch, string displayName,
+            (Symbol symbol, int quantity, double price, DateTime date, Side side)[] records)
+        {
+            Debug.WriteLine("FindMatchTestFromJsonRecordsAny started");
+            var createdRecords = records.Select(r => CreateRecord(r.symbol, r.quantity, r.price, r.date, r.side)).ToList();
 
-      [DataTestMethod]
+            // Parse the compareRecords string to get the indices
+            var indices = compareRecords.Split(',').Select(int.Parse).ToArray();
+            if (indices.Length != 2)
+            {
+                throw new ArgumentException("compareRecords must specify exactly two indices.");
+            }
+
+            // Get the records to compare
+            var record1 = createdRecords[indices[0] - 1]; // Convert to zero-based index
+            var record2 = createdRecords[indices[1] - 1]; // Convert to zero-based index
+
+            // Check if the two specified records match
+            bool isMatched = _matchingApi.CheckIfRecordsMatched(record1, record2);
+
+            // Assert if the result matches the expected outcome
+            Assert.AreEqual(expectedMatch, isMatched, displayName);
+        }
+
+        public static IEnumerable<object[]> GetTestCasesFromJsonAny3()
+        {
+            Debug.WriteLine("GetTestCasesFromJsonAny started");
+
+            var basePath = AppDomain.CurrentDomain.BaseDirectory;
+            Debug.WriteLine($"Base path: {basePath}");
+
+            var filePath = Path.Combine(basePath, "..", "..", "..", "TestData", "aft_qa_automation.trades_to_Verify.json");
+            Debug.WriteLine($"File path: {filePath}");
+
+            var jsonContent = File.ReadAllText(filePath);
+            Debug.WriteLine("JSON content read");
+
+            var testCases = new List<object[]>();
+
+            try
+            {
+                var records = JsonConvert.DeserializeObject<List<TradeRecord>>(jsonContent);
+                Debug.WriteLine("JSON deserialized");
+
+                if (records == null || !records.Any())
+                {
+                    Debug.WriteLine("No records found in JSON file.");
+                }
+                else
+                {
+                    foreach (var record in records)
+                    {
+                        var recordArray = record.Records.Select(
+                            r =>((Symbol)Enum.Parse(typeof(Symbol), r.Symbol.ToString()), r.Quantity, r.Price, r.SettlementDate, (Side)Enum.Parse(typeof(Side), r.Side.ToString()))
+                        ).ToArray();
+
+                        var testCase = new object[]
+                        {
+                            record.compareRecords,
+                            record.expectedMatch,
+                            record.DisplayName,
+                            recordArray  // Pass the entire array as a single object
+                         };
+
+                        testCases.Add(testCase);
+                        Debug.WriteLine($"Added test case: {record.DisplayName}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception during JSON deserialization: {ex.Message}");
+            }
+
+            Debug.WriteLine("GetTestCasesFromJsonAny completed");
+            return testCases;
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(GetTestCases), DynamicDataSourceType.Method)]
+        public void FindMatchTestFromFile(bool expectedMatch, string displayName, params (string symbol, int quantity, double price, string dateString, Side side)[] records)
+        {
+            var createdRecords = records.Select(r => CreateRecord(r.symbol, r.quantity, r.price, DateTime.Parse(r.dateString), r.side)).ToList();
+
+            // Check if records match
+            bool isMatched = false;
+            for (int i = 0; i < createdRecords.Count; i++)
+            {
+                for (int j = i + 1; j < createdRecords.Count; j++)
+                {
+                    if (_matchingApi.CheckIfRecordsMatched(createdRecords[i], createdRecords[j]))
+                    {
+                        isMatched = true;
+                        break;
+                    }
+                }
+                if (isMatched) break;
+            }
+
+            // Assert if the result matches the expected outcome
+            Assert.AreEqual(expectedMatch, isMatched, displayName);
+        }
+
+
+    [DataTestMethod]
       [DynamicData(nameof(GetTestCases), DynamicDataSourceType.Method)]
       public void FindMatchTestFromFile(
       string symbol1, int quantity1, double price1, string dateString1, Side side1,
@@ -67,6 +197,11 @@ namespace AF.AutomationTest.MatchingEngine.Tests
 
             // Assert if the result matches the expected outcome
             Assert.AreEqual(expectedMatch, isMatched, displayName);
+        }
+
+        private Record CreateRecord(Symbol symbol, int quantity, double price, DateTime date, Side side)
+        {
+            return _matchingApi.CreateRecord(symbol, quantity, price, date, side);
         }
 
         // Helper method for creating records
