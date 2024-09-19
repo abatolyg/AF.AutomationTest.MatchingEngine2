@@ -22,6 +22,10 @@ namespace AF.AutomationTest.MatchingEngine.Tests
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
+    using static System.Net.Mime.MediaTypeNames;
+    using static System.Runtime.InteropServices.JavaScript.JSType;
+    using System.Buffers.Text;
+
     public class ObjectIdConverter : JsonConverter<ObjectId>
     {
         public override ObjectId ReadJson(JsonReader reader, Type objectType, ObjectId existingValue, bool hasExistingValue, JsonSerializer serializer)
@@ -43,10 +47,10 @@ namespace AF.AutomationTest.MatchingEngine.Tests
     }
     public class TradeRecord
     {
-        [JsonProperty("_id")]
-        [JsonConverter(typeof(ObjectIdConverter))]
-        [JsonIgnore]
-        public ObjectId Id { get; set; }
+        [JsonIgnore]  // Ignore the Id field during JSON serialization/deserialization
+        public string Id { get; set; }
+        [JsonIgnore]  // Ignore ObjectId if used
+        public ObjectId ObjectId { get; set; }
         public List<Record> Records { get; set; } = new List<Record>();
         public string compareRecords { get; set; }
         public bool expectedMatch { get; set; }
@@ -64,8 +68,7 @@ namespace AF.AutomationTest.MatchingEngine.Tests
     {
         private static MatchingApi _matchingApi;
         private MongoDBService _mongoDBService;
-        private static List<BsonDocument> _jsonObjects;
-
+        
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)
         {
@@ -83,23 +86,13 @@ namespace AF.AutomationTest.MatchingEngine.Tests
                 "aft_qa_automation",
                 "trades_to_Verify");
 
-            _jsonObjects = await _mongoDBService.GetJsonObjectsAsync();
-            var jsonContentDB = _jsonObjects.ToJson();
-
-            Debug.WriteLine("jsonContentDB:", jsonContentDB);
-
-            // Preprocess the JSON content to replace ObjectId("...") with valid JSON strings
-            // jsonContentDB = Regex.Replace(jsonContentDB, @"ObjectId\(\""([0-9a-fA-F]{24})\""\)", "\"$1\"");
-
-            var recordsDB = Newtonsoft.Json.JsonConvert.DeserializeObject<List<TradeRecord>>(jsonContentDB);
-
-            var basePath = AppDomain.CurrentDomain.BaseDirectory;
-            var filePath = Path.Combine(basePath, "..", "..", "..", "TestData", "aft_qa_automation.trades_to_Verify.json");
-            var jsonContent = File.ReadAllText(filePath);
-
-            Debug.WriteLine("jsonContent:", jsonContent);
-
-            var records = Newtonsoft.Json.JsonConvert.DeserializeObject<List<TradeRecord>>(jsonContent);
+            //Pre - load the Data from Database: If possible, pre-load your test data from the database and store it locally
+            //(e.g., in a file or in memory), so it is available during test discovery.
+            //This would make it behave similarly to file-based test cases and ensure that the parameters show up in Test Explorer.
+            List<BsonDocument> jsonObjects =  await _mongoDBService.GetJsonObjectsAsync();
+            var jsonObjectsStr  = jsonObjects.ToJson();
+            var jsonObjectsCleanTemp = jsonObjectsStr.Replace("_id", "");
+            string jsonObjectsStrDB = Regex.Replace(jsonObjectsCleanTemp, @"ObjectId\(""(.+?)""\)", "\"$1\"");
         }
 
         // Readme
@@ -110,17 +103,17 @@ namespace AF.AutomationTest.MatchingEngine.Tests
         // BUG 3: FindMatchTest_Quantity_MatchTolerance5_Equal test failed. Was missed ">="
         // BUG 4: Not a bug, but API Improvement suggestion:
         // string symbol to be replace by ENUM Symbol in the CreateRecord method. Similar to Side
-            ///I am not sure if it is a bug or symbol can be any string required!!!!
-            // CreateRecord(string symbol, int quantity, double price, DateTime settlementDate, Side side)
-            // BUG 5: FindMatchTest_Symbol_NullValues - it is NullReferenceException that should be fixed in the API.
-            // i do not fix it as this is not in scope i believe.  
-            // BUG 6: FindMatchTest_MoreThen2IdendicalRecordsBuy - failed. 
-            // Expected: This service finds matches between 2 records – each record can be matched to only one other record.
-            // Actual: test returned TRue even if more then one identical 
-            // BUG 7: FindMatchTest_Price_IdenticalInDecimal3dec failed
-            // Price type decimal repklaced to double 
-            // BUG 8: Test Case Faile. TC_1012_ Date Mismatch by Minutes,Seconds,Milliseconds, Time Zones failed
-            // Helper method for creating records
+        ///I am not sure if it is a bug or symbol can be any string required!!!!
+        // CreateRecord(string symbol, int quantity, double price, DateTime settlementDate, Side side)
+        // BUG 5: FindMatchTest_Symbol_NullValues - it is NullReferenceException that should be fixed in the API.
+        // i do not fix it as this is not in scope i believe.  
+        // BUG 6: FindMatchTest_MoreThen2IdendicalRecordsBuy - failed. 
+        // Expected: This service finds matches between 2 records – each record can be matched to only one other record.
+        // Actual: test returned TRue even if more then one identical 
+        // BUG 7: FindMatchTest_Price_IdenticalInDecimal3dec failed
+        // Price type decimal repklaced to double 
+        // BUG 8: Test Case Faile. TC_1012_ Date Mismatch by Minutes,Seconds,Milliseconds, Time Zones failed
+        // Helper method for creating records
         [DataTestMethod]
         [DynamicData(nameof(GetTestCasesFromJsonAny3), DynamicDataSourceType.Method)]
         public void FindMatchTestFromJsonRecordsAny(string compareRecords, bool expectedMatch, string displayName,
@@ -149,17 +142,9 @@ namespace AF.AutomationTest.MatchingEngine.Tests
 
         public static IEnumerable<object[]> GetTestCasesFromJsonAny3()
         {
-            Debug.WriteLine("GetTestCasesFromJsonAny started");
-
             var basePath = AppDomain.CurrentDomain.BaseDirectory;
-            Debug.WriteLine($"Base path: {basePath}");
-
             var filePath = Path.Combine(basePath, "..", "..", "..", "TestData", "aft_qa_automation.trades_to_Verify.json");
-            Debug.WriteLine($"File path: {filePath}");
-
-            var jsonContent = File.ReadAllText(filePath);
-            Debug.WriteLine("JSON content read");
-
+            var jsonObjectsStrFile = File.ReadAllText(filePath);
             var testCases = new List<object[]>();
 
             try
@@ -167,7 +152,8 @@ namespace AF.AutomationTest.MatchingEngine.Tests
                 // Assuming _mongoDBService is already initialized and jsonObjects is populated
                 // var jsonContentDB = _jsonObjects.ToJson();
                 Debug.WriteLine("JSON content read from database");
-                var records = Newtonsoft.Json.JsonConvert.DeserializeObject<List<TradeRecord>>(jsonContent);
+
+                var records = Newtonsoft.Json.JsonConvert.DeserializeObject<List<TradeRecord>>(jsonObjectsStrFile);
                 Debug.WriteLine("JSON deserialized");
 
                 if (records == null || !records.Any())
